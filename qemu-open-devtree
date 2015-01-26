@@ -1,0 +1,53 @@
+#!/bin/sh -e
+
+# Copyright (C) 2014 Linaro Limited
+# Author: Peter Maydell <peter.maydell@linaro.org>
+# This work is licensed under the terms of the GNU GPL version 2 or later.
+
+# Reopen the dev tree; this just requires us to update
+# VERSION, not to tag anything. Our scheme is:
+# VERSION: release: 1.7.0, development opens: 1.7.50,
+# rc0 for next release: 1.7.90, rc1: 1.7.91, next release: 2.0.0
+# Tag: v<major>.<minor>.<revision>[-rc<rc#>]
+#
+# and so the VERSION change to open the devtree is always
+# just "replace trailing .0 with .50".
+# The command line argument is the name of the new version,
+# used only in the commit message.
+#
+# Examples:
+#  qemu-tag-release 2.1.90 v2.2.0-rc0
+#  qemu-tag-release 2.1.91 v2.2.0-rc1
+#  qemu-tag-release 2.2.0 v2.2.0
+#  qemu-open-devtree 2.3
+
+if [ $# -ne 1 ]; then
+    echo "usage: qemu-open-devtree newver"
+    exit 1
+fi
+
+if ! [ -e VERSION ]; then
+    echo "Not in merge tree?"
+    exit 1
+fi
+
+NEWVERNAME="$1"
+
+OLDVER="$(cat VERSION)"
+VERMAJ="${OLDVER%.*}"
+OLDVERMIN="${OLDVER##*.}"
+
+if [ "$OLDVERMIN" != "0" ]; then
+    echo "VERSION not a final release version?"
+    exit 1
+fi
+
+NEWVER="$VERMAJ.50"
+
+echo "$NEWVER" > VERSION
+git add VERSION
+git commit -s -m "Open $NEWVERNAME development tree"
+echo "Dry-run publish:"
+git push --dry-run publish-upstream staging:master
+echo "OK. To publish, run:"
+echo "git push publish-upstream staging:master"

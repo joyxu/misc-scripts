@@ -1,0 +1,69 @@
+#!/bin/sh -e
+
+# Apply a pull request
+
+# Copyright (C) 2014 Linaro Limited
+# Author: Peter Maydell <peter.maydell@linaro.org>
+# This work is licensed under the terms of the GNU GPL version 2 or later.
+
+# Expects two arguments:  remote-url remote-branch-or-tagname
+
+# This makes a bunch of assumptions about repo setup and
+# preferred build-and-test commands.
+
+SIGNOFF='Peter Maydell <peter.maydell@linaro.org>'
+
+if [ $# != 2 ]; then
+    echo "Usage: apply-pullreq remote-url branch-or-tagname"
+    exit 1
+fi
+
+REMOTEURL="$1"
+REMOTETAG="$2"
+
+
+BRANCH="$(git symbolic-ref -q HEAD || true)"
+# NB that in the "detached head" case BRANCH will be the empty string
+
+if [ "$BRANCH" != "refs/heads/staging" ]; then
+    echo "Must be on staging branch"
+    exit 1
+fi
+
+git checkout master
+git pull
+git checkout staging
+
+if [ "$(git rev-parse master)" != "$(git rev-parse staging)" ]; then
+    echo "staging not up to date : suggest 'git reset --hard master'"
+    exit 1
+fi
+
+REMOTENAME="$(git remote -v | grep -F "$REMOTEURL (fetch)" | cut -f1)"
+
+if [ -z "$REMOTENAME" ]; then
+    echo "Unknown remote $REMOTEURL: add manually and fix up config!"
+    exit 1
+fi
+
+echo "fetching from remote $REMOTENAME"
+git fetch "$REMOTENAME"
+
+echo "merging..."
+git merge --no-edit --no-ff "remotes/$REMOTENAME/$REMOTETAG"
+# Edit the merge commit to add our signoff line
+(git log -1 --format=%B HEAD ; echo "Signed-off-by: $SIGNOFF") | git commit --amend --file=-
+
+echo "pushing staging branch to my tree:"
+git push --force publish-pmaydell staging:staging
+
+pull-buildtest
+
+echo "Looks good; trying a dry-run publish:"
+git push --dry-run publish-upstream staging:master
+
+# For obvious reasons we don't let the script automatically
+# do the publish to upstream master...
+
+echo "OK; to publish for real run:"
+echo "git push publish-upstream staging:master"

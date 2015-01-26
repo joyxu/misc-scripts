@@ -1,0 +1,28 @@
+#!/bin/sh -e
+#
+# Copyright (C) 2014 Linaro Limited
+# Author: Peter Maydell <peter.maydell@linaro.org>
+# This work is licensed under the terms of the GNU GPL version 2 or later.
+
+# warning: some hard coded paths here
+
+# build-and-test part of a pull request
+
+echo "Doing build and test cycle..."
+
+JFLAG=-j$(nproc)
+
+# test one build from clean, at least:
+make -C build/alldbg clean
+make -C build/all $JFLAG
+make -C build/alldbg $JFLAG
+make -C build/w32 $JFLAG
+make -C build/clang $JFLAG
+schroot -c centos -- make -C build/centos $JFLAG
+make -C build/all-linux-static $JFLAG
+make -C build/all check
+make -C build/alldbg check
+make -C build/clang check
+make -C build/all-linux-static check
+make -C ~/linaro/linux-user-test-0.3/ test
+echo "OK, done."

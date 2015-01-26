@@ -1,0 +1,28 @@
+#!/bin/sh -e
+
+# Copyright (C) 2014 Linaro Limited
+# Author: Peter Maydell <peter.maydell@linaro.org>
+# This work is licensed under the terms of the GNU GPL version 2 or later.
+
+# Blow away and recreate build directories for merge tree
+
+cd ~/linaro/qemu-for-merges
+
+rm -rf build
+
+do_conf() {
+    local buildname="$1"
+    shift
+    mkdir -p "build/$buildname"
+    (cd "build/$buildname" && ../../configure "$@")
+}
+
+# do_conf aarch64 '--cross-prefix=aarch64-linux-gnu-' '--target-list=arm-softmmu,aarch64-softmmu'
+
+# do_conf notools '--target-list=arm-softmmu' '--disable-tools' '--cc=ccache gcc'
+
+do_conf all-linux-static '--cc=ccache gcc' '--enable-debug' '--static' '--disable-system'
+do_conf all '--cc=ccache gcc'
+do_conf alldbg '--cc=ccache gcc' '--enable-debug'
+do_conf clang '--cc=clang' '--cxx=clang++' '--enable-gtk' '--extra-cflags=-fsanitize=undefined'
+do_conf w32 '--cross-prefix=i586-mingw32msvc-' '--extra-cflags=-I/home/petmay01/linaro/mingw/include' '--extra-ldflags=-L/home/petmay01/linaro/mingw/lib' '--enable-debug'

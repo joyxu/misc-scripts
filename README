@@ -1,0 +1,10 @@
+This git repo provides a collection of miscellaneous scripts
+I've written, mostly for managing QEMU building, pull request
+processing and so on.
+
+Licensing is generally GPLv2-or-later, but check comments on
+individual scripts.
+
+Since they're primarily personal-use scripts, documentation
+usage examples and error handling can be a bit sketchy. Patches
+welcome...

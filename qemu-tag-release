@@ -1,0 +1,41 @@
+#!/bin/sh -e
+
+# Copyright (C) 2014 Linaro Limited
+# Author: Peter Maydell <peter.maydell@linaro.org>
+# This work is licensed under the terms of the GNU GPL version 2 or later.
+
+# Annoyingly, it's not possible to programmatically figure out
+# the version from the tag name. Our scheme is:
+# VERSION: release: 1.7.0, development opens: 1.7.50,
+# rc0 for next release: 1.7.90, rc1: 1.7.91, next release: 2.0.0
+# Tag: v<major>.<minor>.<revision>[-rc<rc#>]
+# Examples:
+#  qemu-tag-release 2.1.90 v2.2.0-rc0
+#  qemu-tag-release 2.1.91 v2.2.0-rc1
+#  qemu-tag-release 2.2.0 v2.2.0
+#  qemu-open-devtree 2.3
+
+# This script doesn't handle the "reopen dev tree" case;
+# see qemu-open-devtree for that.
+
+if [ $# -ne 2 ]; then
+    echo "usage: qemu-tag-release version tagname"
+    exit 1
+fi
+
+VERSION="$1"
+TAGNAME="$2"
+
+if ! [ -e VERSION ]; then
+    echo "Not in merge tree?"
+    exit 1
+fi
+
+echo "$VERSION" > VERSION
+git add VERSION
+git commit -s -m "Update version for $TAGNAME release"
+git tag -s -m "$TAGNAME release" "$TAGNAME"
+echo "Dry-run publish:"
+git push --dry-run publish-upstream staging:master "$TAGNAME"
+echo "OK. To publish, run:"
+echo "git push publish-upstream staging:master $TAGNAME"
