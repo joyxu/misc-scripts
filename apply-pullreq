@@ -21,6 +21,9 @@ fi
 REMOTEURL="$1"
 REMOTETAG="$2"
 
+# hard newline
+NL='
+'
 
 BRANCH="$(git symbolic-ref -q HEAD || true)"
 # NB that in the "detached head" case BRANCH will be the empty string
@@ -39,7 +42,18 @@ if [ "$(git rev-parse master)" != "$(git rev-parse staging)" ]; then
     exit 1
 fi
 
-REMOTENAME="$(git remote -v | grep -F "$REMOTEURL (fetch)" | cut -f1)"
+# Find the remote name corresponding to the URL. Note that we
+# assume that any protocol on the remote is the same thing, and
+# that a trailing ".git" makes no difference. This helps when
+# submaintainers switch from specifying git:// to https:// and
+# so on (particularly common with github URLs for some reason).
+
+# trim leading protocol spec and trailing .git (if any)
+REMURL=${REMOTEURL#*:}
+REMURL=${REMURL%.git}
+FGREPARG="$REMURL (fetch)$NL$REMURL.git (fetch)"
+
+REMOTENAME="$(git remote -v | grep -F "$FGREPARG" | cut -f1)"
 
 if [ -z "$REMOTENAME" ]; then
     echo "Unknown remote $REMOTEURL: add manually and fix up config!"
