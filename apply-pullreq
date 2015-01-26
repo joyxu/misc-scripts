@@ -56,7 +56,8 @@ FGREPARG="$REMURL (fetch)$NL$REMURL.git (fetch)"
 REMOTENAME="$(git remote -v | grep -F "$FGREPARG" | cut -f1)"
 
 if [ -z "$REMOTENAME" ]; then
-    echo "Unknown remote $REMOTEURL: add manually and fix up config!"
+    echo "Unknown remote $REMOTEURL: add manually via"
+    echo "add-merge-remote $REMOTENAME $REMOTEURL"
     exit 1
 fi
 
