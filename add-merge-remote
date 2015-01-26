@@ -1,0 +1,24 @@
+#!/bin/sh -e
+
+# Add a remote to the merge repo
+
+# Copyright (C) 2015 Linaro Limited
+# Author: Peter Maydell <peter.maydell@linaro.org>
+# This work is licensed under the terms of the GNU GPL version 2 or later.
+
+# Expects two arguments:  remote-name remote-url
+# This works exactly like 'git remote add remote-name remote-url'
+# except that it also adds a 'fetch' line that pulls in the
+# remote repo's tags under refs/remotes/remote-name/tags/
+
+if [ $# != 2 ]; then
+    echo "Usage: add-merge-remote remote-name remote-url"
+    exit 1
+fi
+
+REMOTENAME="$1"
+REMOTEURL="$2"
+
+git remote add "$REMOTENAME" "$REMOTEURL"
+
+git config --local --add "remote.$REMOTENAME.fetch" "fetch = +refs/tags/*:refs/remotes/$REMOTENAME/tags/*"
