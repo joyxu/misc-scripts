@@ -1,0 +1,91 @@
+#!/usr/bin/perl -w
+
+# List all git branches, sorted by most recently touched,
+# with useful info including the subject of the most recent commit.
+# Options:
+#  --show-unapplied : mark stgit branches with unapplied patches with 'S'
+#   [NB: this takes ~20 times as long as the default, so ~10 seconds]
+
+# Copyright (C) 2015 Linaro Limited
+# Author: Peter Maydell <peter.maydell@linaro.org>
+# This work is licensed under the terms of the GNU GPL version 2 or later.
+
+use strict;
+use Getopt::Long;
+
+my $SHOW_UNAPPLIED = 0;
+
+GetOptions('show-unapplied' => \$SHOW_UNAPPLIED) || exit(1);
+
+sub branch_exists($)
+{
+    # Return true/false: is this the name of an existing git branch?
+    my ($branch) = @_;
+    return (system("git", "show-ref", "--verify", "--quiet",
+                   "refs/heads/$branch") == 0);
+}
+
+sub stgit_unapplied_count($)
+{
+    # Return number of unapplied stgit patches for an stgit branch
+    my ($branch) = @_;
+    return 0 unless $SHOW_UNAPPLIED;
+
+    my ($count) = `stg series -b $branch --count --unapplied`;
+    chomp ($count);
+    return $count;
+}
+
+my %fields = (
+    'date' => '%(committerdate:short)',
+    'ref' => '%(refname:short)',
+    'subject' => '%(contents:subject)');
+
+my $fmt = join("\n", map { $fields{$_} } sort keys %fields);
+
+open(GIT, "-|", "git", "for-each-ref", "refs/heads", "--format=$fmt")
+    || die "open failed: $!";
+
+my @records = ();
+
+my $maxreflen = 0;
+
+my ($currentbranch) = `git rev-parse --abbrev-ref HEAD`;
+chomp($currentbranch);
+
+RECORD: while (1) {
+    my $rec = {};
+    foreach my $f (sort keys %fields) {
+        my $v = <GIT>;
+        last RECORD unless defined $v;
+        chomp($rec->{$f} = $v);
+    }
+    my $ref = $rec->{'ref'};
+    next if $ref =~ /\.stgit$/;
+
+    if (branch_exists($ref . ".stgit")) {
+        if (stgit_unapplied_count($ref)) {
+            $rec->{'stgit'} = "S";
+        } else {
+            $rec->{'stgit'} = "s";
+        }
+    } else {
+        $rec->{'stgit'} = " ";
+    }
+
+    $rec->{'current'} = ($currentbranch eq $ref) ? "*" : " ";
+
+    my $reflen = length($ref);
+    $maxreflen = $reflen if $reflen > $maxreflen; 
+
+    push @records, $rec;
+}
+
+# sort by date, oldest first. String compare on the date field
+# since it's an ISO-format date.
+@records = sort { $a->{'date'} cmp $b->{'date'} } @records;
+
+for my $rec (@records) {
+    printf "%s%s %-*s %-10s  %s\n", $rec->{'current'}, $rec->{'stgit'},
+    $maxreflen, $rec->{'ref'}, $rec->{'date'}, $rec->{'subject'};
+}
