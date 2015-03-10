@@ -21,4 +21,4 @@ REMOTEURL="$2"
 
 git remote add "$REMOTENAME" "$REMOTEURL"
 
-git config --local --add "remote.$REMOTENAME.fetch" "fetch = +refs/tags/*:refs/remotes/$REMOTENAME/tags/*"
+git config --local --add "remote.$REMOTENAME.fetch" "+refs/tags/*:refs/remotes/$REMOTENAME/tags/*"
