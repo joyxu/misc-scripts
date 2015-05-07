@@ -13,6 +13,13 @@
 
 SIGNOFF='Peter Maydell <peter.maydell@linaro.org>'
 
+VRFY=yes
+
+if [ $# != 0 ] && [ "$1" = "--no-verify-sig" ]; then
+    shift
+    VRFY=no
+fi
+
 if [ $# != 2 ]; then
     echo "Usage: apply-pullreq remote-url branch-or-tagname"
     exit 1
@@ -63,6 +70,14 @@ fi
 
 echo "fetching from remote $REMOTENAME"
 git fetch "$REMOTENAME"
+
+if [ "$VRFY" = "yes" ]; then
+    if ! git verify-tag "remotes/$REMOTENAME/$REMOTETAG"; then
+        echo "Does not appear to be a signed tag"
+        echo "(use --no-verify-sig to override)"
+        exit 1
+    fi
+fi
 
 echo "merging..."
 git merge --no-edit --no-ff "remotes/$REMOTENAME/$REMOTETAG"
