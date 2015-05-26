@@ -18,7 +18,6 @@ make -C build/all $JFLAG
 make -C build/alldbg $JFLAG
 make -C build/w32 $JFLAG
 make -C build/clang $JFLAG
-schroot -c centos -- make -C build/centos $JFLAG
 make -C build/all-linux-static $JFLAG
 make -C build/all check
 make -C build/alldbg check
