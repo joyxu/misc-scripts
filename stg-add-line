@@ -1,0 +1,36 @@
+#!/bin/sh -e
+#
+# Do an stg edit, but adding the first command line argument as
+# its own line at the end of the commit message, without any user interaction.
+# Further arguments are passed directly to 'stg edit'; the only really
+# useful one is to provide the name of the patch to edit.
+#
+# Useful for
+#  stg-add-line 'Reviewed-by: Foo Bar <foo@bar.com>' [patchname]
+#
+# Copyright (C) 2016 Linaro Limited
+# Author: Peter Maydell <peter.maydell@linaro.org>
+# This work is licensed under the terms of the GNU GPL version 2 or later.
+
+# We have to do this by creating a temporary script which we tell
+# stg to use as the editor.
+
+if [ $# -eq 0 ]; then
+    echo "Usage: stg-add-line line-to-add [other stg edit options]"
+    exit 1
+fi
+
+MYLINE="$1"
+shift
+
+EDITSCRIPT="$(mktemp --tmpdir 'stg-add-line-tmp.XXXXXXXXXXX')"
+trap 'rm -f -- "$EDITSCRIPT"' INT TERM HUP EXIT
+
+cat > "$EDITSCRIPT" <<EOT
+#!/bin/sh -e
+echo '$MYLINE' >> "\$1"
+EOT
+
+chmod u+x "$EDITSCRIPT"
+
+EDITOR="$EDITSCRIPT" stg edit "$@"
