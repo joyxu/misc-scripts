@@ -84,10 +84,10 @@ git merge --no-edit --no-ff "remotes/$REMOTENAME/$REMOTETAG"
 # Edit the merge commit to add our signoff line
 (git log -1 --format=%B HEAD ; echo "Signed-off-by: $SIGNOFF") | git commit --amend --file=-
 
-echo "pushing staging branch to my tree:"
-git push --force publish-pmaydell staging:staging
+# This should exit with an error status if any of the sub-builds fails.
+parallel-buildtest
 
-pull-buildtest
+echo "WARNING: please check these results files!"
 
 echo "Looks good; trying a dry-run publish:"
 git push --dry-run publish-upstream staging:master

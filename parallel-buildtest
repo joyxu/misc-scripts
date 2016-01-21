@@ -1,0 +1,29 @@
+#!/bin/sh -e
+#
+# Test an applied pullreq/etc on several machines
+# using GNU parallel.
+
+# Copyright (C) 2016 Linaro Limited
+# Author: Peter Maydell <peter.maydell@linaro.org>
+# This work is licensed under the terms of the GNU GPL version 2 or later.
+
+echo "pushing staging branch to my tree:"
+git push --force publish-pmaydell staging:staging
+
+# Read a config file which lists the servers to run on
+. ~/.parallel-buildtest-config
+
+if [ -z "$SERVERLIST" ]; then
+    echo "SERVERLIST not specified in ~/.parallel-buildtest-config"
+    exit 1
+fi
+
+# Run 'mergebuild' on all the specified machines. (The scripts on
+# the machines are adjusted to cd into the correct directory, etc.)
+
+# NB: we could ignore hosts that are down using --filter-hosts
+
+# Not the greatest, but --results doesn't seem to work with --onall/nonall.
+parallel --files --tag --nonall -S $SERVERLIST 'uname -a && mergebuild'
+
+echo "All parallel builds completed successfully (check logs!)"
