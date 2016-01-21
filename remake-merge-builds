@@ -29,3 +29,12 @@ do_conf clang '--cc=clang' '--cxx=clang++' '--enable-gtk' '--extra-cflags=-fsani
 # because the compiler can't handle the GCC diagnostic-disabling pragmas. As it happens the w32
 # build doesn't encounter any of those so it's ok to override configure.
 do_conf w32 '--cross-prefix=i586-mingw32msvc-' '--extra-cflags=-I/home/petmay01/linaro/mingw/include -Werror' '--extra-ldflags=-L/home/petmay01/linaro/mingw/lib' '--enable-debug'
+
+# -Wno-unused-local-typedefs is working around a problem with the glib version this
+# toolchain is using where newer gcc gave a warning about its assert macro. Fixed
+# in later glib but I don't care to go through the process of sorting out the libs again.
+# TODO could we use --enable-werror rather than -Werror with these compilers ?
+do_conf w32-new '--cross-prefix=i686-w64-mingw32-' '--extra-cflags=-I/home/petmay01/linaro/mingw/include -Werror -Wno-unused-local-typedefs' '--extra-ldflags=-L/home/petmay01/linaro/mingw/lib'
+
+# Similar remarks apply here.
+do_conf w64-new '--cross-prefix=x86_64-w64-mingw32-' '--extra-cflags=-I/home/petmay01/linaro/mingw64/include -Werror -Wno-unused-local-typedefs' '--extra-ldflags=-L/home/petmay01/linaro/mingw64/lib' '--enable-debug'

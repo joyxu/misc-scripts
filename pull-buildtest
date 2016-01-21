@@ -17,6 +17,8 @@ make -C build/alldbg clean
 make -C build/all $JFLAG
 make -C build/alldbg $JFLAG
 make -C build/w32 $JFLAG
+make -C build/w32-new $JFLAG
+make -C build/w64-new $JFLAG
 make -C build/clang $JFLAG
 make -C build/all-linux-static $JFLAG
 make -C build/all check
