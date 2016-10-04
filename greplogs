@@ -1,0 +1,54 @@
+#!/bin/sh
+
+# This script is intended to parse the '/tmp/par*.par' logs
+# that parallel-buildtest creates; just run greplogs with
+# no arguments and then cut-and-paste the .par filenames
+# into its standard output.
+#
+# A successful test run looks something like:
+# Darwin manooth.archaic.org.uk 14.5.0 x86_64
+# OK DONE osx
+# Linux gcc1-power7.osuosl.org 3.17.2-200.fc20.ppc64p7 ppc64
+# OK DONE ppc64be
+# Linux moonshot-dsg-11 4.2.0-30-generic aarch64
+# OK DONE 64-bit ARM
+# Linux moonshot-dsg-07 4.2.0-30-generic aarch64
+# OK DONE 32-bit ARM
+# Linux e104462 4.4.0-31-generic x86_64
+# OK DONE x86
+#
+# Problems will manifest as missing 'OK DONE' lines and/or
+# error or warning messages. (These should also have resulted
+# in parallel-buildtest exiting with a failure status; this
+# script is (a) a sanity check on that and (b) a quick way
+# to see exactly which logfile has the error messages to pass
+# back to the pull request submitter.)
+
+# No set -e because we don't care about the fact that
+# the grep exit status is nonzero if there are no matches
+
+echo "Expecting logfile names on standard input..."
+
+while read f; do
+    [ -e "$f" ] || continue
+    if ! [ -s "$f" ]; then
+        echo "[WARNING: $f empty!]"
+        continue
+    fi
+    head -1 "$f"
+    # Ignored warnings:
+    # (1) linker complaints about using getpwuid_r etc in statically linked
+    # applications (which happen because of a glib awkwardness where it puts
+    # those functions in the same .o as functions we use)
+    # (2) clang sanitizer runtime errors about left shifts
+    # [TODO these can probably be better suppressed with a ubsan flag
+    # now we're using a newer clang build]
+    # (3) a complaint about null_auth being an overridden common between
+    # libnfs and libc when statically linking
+    egrep -i '(error:|warning:|OK DONE|assert)' < "$f" | \
+      grep -v 'statically linked applications' | \
+      grep -v 'runtime error:.*left shift.*cannot be represented' | \
+      grep -v 'runtime error:.*left shift of negative value' | \
+      grep -v 'rpc_common.o.*definition of.*null_auth.*overriding common' | \
+      grep -v 'libnfs.a(libnfs_la-libnfs-zdr.o): warning: common is here'
+done
