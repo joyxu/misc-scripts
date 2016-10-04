@@ -84,6 +84,12 @@ git merge --no-edit --no-ff "remotes/$REMOTENAME/$REMOTETAG"
 # Edit the merge commit to add our signoff line
 (git log -1 --format=%B HEAD ; echo "Signed-off-by: $SIGNOFF") | git commit --amend --file=-
 
+# Check whether there seems to be a submodule update here. NB that this
+# can have false positives..
+if git diff master..staging | grep -q 'Subproject commit'; then
+    echo "WARNING: pull appears to include submodule update, please check it!"
+fi
+
 # This should exit with an error status if any of the sub-builds fails.
 parallel-buildtest
 
