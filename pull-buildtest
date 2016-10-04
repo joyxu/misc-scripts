@@ -16,7 +16,6 @@ JFLAG=-j$(nproc)
 make --output-sync -C build/alldbg clean
 make --output-sync -C build/all $JFLAG
 make --output-sync -C build/alldbg $JFLAG
-make --output-sync -C build/w32 $JFLAG
 make --output-sync -C build/w32-new $JFLAG
 make --output-sync -C build/w64-new $JFLAG
 make --output-sync -C build/clang $JFLAG
