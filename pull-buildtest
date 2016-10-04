@@ -13,17 +13,17 @@ echo "Doing build and test cycle..."
 JFLAG=-j$(nproc)
 
 # test one build from clean, at least:
-make -C build/alldbg clean
-make -C build/all $JFLAG
-make -C build/alldbg $JFLAG
-make -C build/w32 $JFLAG
-make -C build/w32-new $JFLAG
-make -C build/w64-new $JFLAG
-make -C build/clang $JFLAG
-make -C build/all-linux-static $JFLAG
-make -C build/all check
-make -C build/alldbg check
-make -C build/clang check
-make -C build/all-linux-static check
-make -C ~/linaro/linux-user-test-0.3/ test
-echo "OK, done."
+make --output-sync -C build/alldbg clean
+make --output-sync -C build/all $JFLAG
+make --output-sync -C build/alldbg $JFLAG
+make --output-sync -C build/w32 $JFLAG
+make --output-sync -C build/w32-new $JFLAG
+make --output-sync -C build/w64-new $JFLAG
+make --output-sync -C build/clang $JFLAG
+make --output-sync -C build/all-linux-static $JFLAG
+make --output-sync -C build/all check
+make --output-sync -C build/alldbg check
+make --output-sync -C build/clang check
+make --output-sync -C build/all-linux-static check
+make --output-sync -C ~/linaro/linux-user-test-0.3/ test
+echo "OK DONE x86"
