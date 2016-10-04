@@ -24,6 +24,8 @@ fi
 # NB: we could ignore hosts that are down using --filter-hosts
 
 # Not the greatest, but --results doesn't seem to work with --onall/nonall.
-parallel --files --tag --nonall -S $SERVERLIST 'uname -a && mergebuild'
+# The uname options print the interesting stuff but keep the line
+# shorter than 'uname -a' would have.
+parallel --files --tag --nonall -S $SERVERLIST 'uname -mnrs && mergebuild'
 
 echo "All parallel builds completed successfully (check logs!)"
