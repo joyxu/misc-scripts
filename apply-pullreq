@@ -64,7 +64,7 @@ REMOTENAME="$(git remote -v | grep -F "$FGREPARG" | cut -f1)"
 
 if [ -z "$REMOTENAME" ]; then
     echo "Unknown remote $REMOTEURL: add manually via"
-    echo "add-merge-remote $REMOTENAME $REMOTEURL"
+    echo "add-merge-remote REMOTENAME $REMOTEURL"
     exit 1
 fi
 
