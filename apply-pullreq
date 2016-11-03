@@ -80,7 +80,7 @@ if [ "$VRFY" = "yes" ]; then
 fi
 
 echo "merging..."
-git merge --no-edit --no-ff "remotes/$REMOTENAME/$REMOTETAG"
+git merge --no-edit --no-ff --log "remotes/$REMOTENAME/$REMOTETAG"
 # Edit the merge commit to add our signoff line
 (git log -1 --format=%B HEAD ; echo "Signed-off-by: $SIGNOFF") | git commit --amend --file=-
 
