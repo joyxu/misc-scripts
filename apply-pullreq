@@ -11,8 +11,6 @@
 # This makes a bunch of assumptions about repo setup and
 # preferred build-and-test commands.
 
-SIGNOFF='Peter Maydell <peter.maydell@linaro.org>'
-
 VRFY=yes
 
 if [ $# != 0 ] && [ "$1" = "--no-verify-sig" ]; then
@@ -82,7 +80,7 @@ fi
 echo "merging..."
 git merge --no-edit --no-ff --log "remotes/$REMOTENAME/$REMOTETAG"
 # Edit the merge commit to add our signoff line
-(git log -1 --format=%B HEAD ; echo "Signed-off-by: $SIGNOFF") | git commit --amend --file=-
+git commit --amend --signoff --no-edit
 
 # Check whether there seems to be a submodule update here. NB that this
 # can have false positives..
