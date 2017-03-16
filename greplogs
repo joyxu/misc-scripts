@@ -45,7 +45,9 @@ while read f; do
     # now we're using a newer clang build]
     # (3) a complaint about null_auth being an overridden common between
     # libnfs and libc when statically linking
+    # (4) OSX's ancient texinfo doesn't know about UTF-8
     egrep -i '(error:|warning:|OK DONE|assert)' < "$f" | \
+      grep -v 'warning: unrecognized encoding name `UTF-8' | \
       grep -v 'statically linked applications' | \
       grep -v 'runtime error:.*left shift.*cannot be represented' | \
       grep -v 'runtime error:.*left shift of negative value' | \
