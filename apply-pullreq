@@ -6,20 +6,31 @@
 # Author: Peter Maydell <peter.maydell@linaro.org>
 # This work is licensed under the terms of the GNU GPL version 2 or later.
 
-# Expects two arguments:  remote-url remote-branch-or-tagname
+# Usage: apply-pullreq [options] remote-url remote-branch-or-tagname
+#
+# Valid options:
+#  --no-verify-sig : disable the gpg signature verification
+#  --submodule-ok : allow merges which change submodules
+#                   (disabled by default to prevent accidental downgrades)
 
 # This makes a bunch of assumptions about repo setup and
 # preferred build-and-test commands.
 
 VRFY=yes
+SUBMODULE=no
 
 if [ $# != 0 ] && [ "$1" = "--no-verify-sig" ]; then
     shift
     VRFY=no
 fi
 
+if [ $# != 0 ] && [ "$1" = "--submodule-ok" ]; then
+    shift
+    SUBMODULE=yes
+fi
+
 if [ $# != 2 ]; then
-    echo "Usage: apply-pullreq remote-url branch-or-tagname"
+    echo "Usage: apply-pullreq [options] remote-url branch-or-tagname"
     exit 1
 fi
 
@@ -85,6 +96,11 @@ git commit --amend --signoff --no-edit
 # Check whether there seems to be a submodule update here. NB that this
 # can have false positives..
 if git diff master..staging | grep -q 'Subproject commit'; then
+    if [ "$SUBMODULE" = "no" ]; then
+        echo "ERROR: pull request includes submodule update"
+        echo "(use --submodule-ok to override)"
+        exit 1
+    fi
     echo "WARNING: pull appears to include submodule update, please check it!"
 fi
 
