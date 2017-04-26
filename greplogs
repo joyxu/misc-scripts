@@ -40,17 +40,12 @@ while read f; do
     # (1) linker complaints about using getpwuid_r etc in statically linked
     # applications (which happen because of a glib awkwardness where it puts
     # those functions in the same .o as functions we use)
-    # (2) clang sanitizer runtime errors about left shifts
-    # [TODO these can probably be better suppressed with a ubsan flag
-    # now we're using a newer clang build]
-    # (3) a complaint about null_auth being an overridden common between
+    # (2) a complaint about null_auth being an overridden common between
     # libnfs and libc when statically linking
-    # (4) OSX's ancient texinfo doesn't know about UTF-8
+    # (3) OSX's ancient texinfo doesn't know about UTF-8
     egrep -i '(error:|warning:|OK DONE|assert)' < "$f" | \
       grep -v 'warning: unrecognized encoding name `UTF-8' | \
       grep -v 'statically linked applications' | \
-      grep -v 'runtime error:.*left shift.*cannot be represented' | \
-      grep -v 'runtime error:.*left shift of negative value' | \
       grep -v 'rpc_common.o.*definition of.*null_auth.*overriding common' | \
       grep -v 'libnfs.a(libnfs_la-libnfs-zdr.o): warning: common is here'
 done

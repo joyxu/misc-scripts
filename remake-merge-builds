@@ -24,7 +24,10 @@ do_conf() {
 do_conf all-linux-static '--cc=ccache gcc' '--enable-debug' '--static' '--disable-system'
 do_conf all '--cc=ccache gcc'
 do_conf alldbg '--cc=ccache gcc' '--enable-debug'
-do_conf clang '--cc=clang' '--cxx=clang++' '--enable-gtk' '--extra-cflags=-fsanitize=undefined -Werror'
+# We have to disable shift-base sanitizer warnings because older
+# versions of clang don't realize that -fwrapv means shifts into the sign bit, etc are
+# defined behaviour. https://bugs.llvm.org/show_bug.cgi?id=25552
+do_conf clang '--cc=clang' '--cxx=clang++' '--enable-gtk' '--extra-cflags=-fsanitize=undefined  -fno-sanitize=shift-base -Werror'
 
 # -Wno-unused-local-typedefs is working around a problem with the glib version this
 # toolchain is using where newer gcc gave a warning about its assert macro. Fixed
