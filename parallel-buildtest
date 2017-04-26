@@ -26,6 +26,6 @@ fi
 # Not the greatest, but --results doesn't seem to work with --onall/nonall.
 # The uname options print the interesting stuff but keep the line
 # shorter than 'uname -a' would have.
-parallel --files --tag --nonall -S $SERVERLIST 'uname -mnrs && mergebuild'
+parallel --files --tag --nonall -S "$SERVERLIST" 'uname -mnrs && mergebuild'
 
 echo "All parallel builds completed successfully (check logs!)"
